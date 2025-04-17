@@ -1,0 +1,102 @@
+package com.example;
+
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.cfg.Configuration;
+
+import javax.persistence.*;
+
+@Entity
+@Table(name = "students")
+class Student {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+
+    @Column(name = "name")
+    private String name;
+
+    @Column(name = "age")
+    private int age;
+
+    // Constructors
+    public Student() {}
+
+    public Student(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+
+    // Getters and Setters
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+}
+
+public class Main {
+    private static SessionFactory factory;
+
+    public static void main(String[] args) {
+        // Create SessionFactory
+        factory = new Configuration()
+                .configure("hibernate.cfg.xml")
+                .addAnnotatedClass(Student.class)
+                .buildSessionFactory();
+
+        // Perform CRUD operations
+        try {
+            // Create
+            createStudent("John Doe", 20);
+            createStudent("Jane Smith", 22);
+
+            // Read
+            Student student = getStudent(1);
+            System.out.println("Retrieved Student: " + student.getName() + ", Age: " + student.getAge());
+
+            // Update
+            student.setAge(21);
+            updateStudent(student);
+            System.out.println("Updated Student: " + student.getName() + ", New Age: " + student.getAge());
+
+            // Delete
+            deleteStudent(student.getId());
+            System.out.println("Deleted Student with ID: " + student.getId());
+
+        } finally {
+            factory.close();
+        }
+    }
+
+    // Create
+    public static void createStudent(String name, int age) {
+        Session session = factory.getCurrentSession();
+        Transaction transaction = session.beginTransaction();
+        Student student = new Student(name, age);
+        session.save(student);
+        transaction.commit();
+    }
+
+    // Read
+    public static Student getStudent(int id) {
+        Session session = factory
